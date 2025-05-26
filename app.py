@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request
 import joblib
 import pandas as pd
@@ -34,3 +33,9 @@ def index():
             plt.close()
 
     return render_template("index.html", message=message, features=features, result=pred_result, prob=prob)
+
+# ✅ 关键 Render 补充段落
+import os
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
