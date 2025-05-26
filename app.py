@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-import joblib
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
@@ -22,22 +21,28 @@ def index():
             model, explainer, features = train_model(df)
             message = "✅ 模型训练完成，可在下方输入参数进行预测。"
         elif model is not None:
+            # 获取用户输入的参数，并转化为 dataframe
             input_data = [float(request.form[f]) for f in features]
             df_input = pd.DataFrame([input_data], columns=features)
+            
+            # 获取预测的概率值
             prob = model.predict_proba(df_input)[0][1]
-
-            # Ensure "OK_NG" column exists
-            if "OK_NG" in explainer.data.columns:
-                threshold = recommend_threshold(model, explainer.data, explainer.data["OK_NG"])
-                pred_result = "✅ 合格" if prob >= threshold else "❌ 不合格"
-                shap_values = explainer(df_input)
-                shap.plots.waterfall(shap_values[0], show=False)
-                plt.savefig("static/shap_plot.png", bbox_inches="tight")
-                plt.close()
-            else:
-                message = "❌ 数据中没有 OK_NG 列，请检查上传的数据"
+            
+            # 使用 recommend_threshold 来推荐最佳分类阈值
+            threshold = recommend_threshold(model, explainer.data, df["OK_NG"])
+            
+            # 判断合格与否
+            pred_result = "✅ 合格" if prob >= threshold else "❌ 不合格"
+            
+            # 计算 SHAP 值并生成 SHAP 可视化图
+            shap_values = explainer(df_input)
+            shap.plots.waterfall(shap_values[0], show=False)
+            
+            # 保存 SHAP 可视化图
+            plt.savefig("static/shap_plot.png", bbox_inches="tight")
+            plt.close()
 
     return render_template("index.html", message=message, features=features, result=pred_result, prob=prob)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
