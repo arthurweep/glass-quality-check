@@ -1,8 +1,7 @@
-
 flask
+xgboost
 shap==0.44.1
-xgboost==1.7.6
+numpy==1.26.4
 pandas
-scikit-learn
 matplotlib
-joblib
+scikit-learn
