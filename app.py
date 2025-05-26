@@ -17,25 +17,23 @@ def index():
 
     if request.method == "POST":
         if "csv_file" in request.files:
-            # 处理上传的 CSV 文件
             csv_file = request.files["csv_file"]
             df = pd.read_csv(csv_file)
             model, explainer, features = train_model(df)
             message = "✅ 模型训练完成，可在下方输入参数进行预测。"
         elif model is not None:
-            # 处理用户输入的玻璃参数
             input_data = [float(request.form[f]) for f in features]
             df_input = pd.DataFrame([input_data], columns=features)
             prob = model.predict_proba(df_input)[0][1]
             threshold = recommend_threshold(model, explainer.data, explainer.data["OK_NG"])
             pred_result = "✅ 合格" if prob >= threshold else "❌ 不合格"
-            
-            # 使用 SHAP 解释预测
             shap_values = explainer(df_input)
             shap.plots.waterfall(shap_values[0], show=False)
-            
-            # 保存 SHAP 图像到 static 文件夹
             plt.savefig("static/shap_plot.png", bbox_inches="tight")
             plt.close()
 
     return render_template("index.html", message=message, features=features, result=pred_result, prob=prob)
+
+# 确保绑定到正确端口
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000, debug=False)
