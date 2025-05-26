@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import joblib
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ features = []
 def index():
     global model, explainer, features
     message, pred_result, prob = "", "", None
+    df = None  # Initialize df here to prevent UnboundLocalError
 
     if request.method == "POST":
         if "csv_file" in request.files:
@@ -20,29 +22,18 @@ def index():
             df = pd.read_csv(csv_file)
             model, explainer, features = train_model(df)
             message = "✅ 模型训练完成，可在下方输入参数进行预测。"
-        elif model is not None:
-            # 获取用户输入的参数，并转化为 dataframe
+        elif model is not None and df is not None:  # Make sure df is not None
             input_data = [float(request.form[f]) for f in features]
             df_input = pd.DataFrame([input_data], columns=features)
-            
-            # 获取预测的概率值
             prob = model.predict_proba(df_input)[0][1]
-            
-            # 使用 recommend_threshold 来推荐最佳分类阈值
-            threshold = recommend_threshold(model, explainer.data, df["OK_NG"])
-            
-            # 判断合格与否
+            threshold = recommend_threshold(model, explainer.data, df["OK_NG"])  # Fix: use df here
             pred_result = "✅ 合格" if prob >= threshold else "❌ 不合格"
-            
-            # 计算 SHAP 值并生成 SHAP 可视化图
             shap_values = explainer(df_input)
             shap.plots.waterfall(shap_values[0], show=False)
-            
-            # 保存 SHAP 可视化图
             plt.savefig("static/shap_plot.png", bbox_inches="tight")
             plt.close()
 
     return render_template("index.html", message=message, features=features, result=pred_result, prob=prob)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=False)
