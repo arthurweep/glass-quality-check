@@ -1,0 +1,8 @@
+
+flask
+shap==0.44.1
+xgboost==1.7.6
+pandas
+scikit-learn
+matplotlib
+joblib
