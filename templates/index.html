@@ -3,43 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glass Quality Prediction</title>
+    <title>模型预测</title>
 </head>
 <body>
-    <h1>Glass Quality Prediction</h1>
+    <h1>欢迎使用玻璃质量预测模型</h1>
 
-    <!-- File upload form -->
-    <form action="/" method="post" enctype="multipart/form-data">
-        <label for="csv_file">Upload CSV file (must include OK_NG column):</label><br><br>
-        <input type="file" name="csv_file" accept=".csv"><br><br>
-        <input type="submit" value="Upload and Train Model">
+    <form method="POST" enctype="multipart/form-data">
+        <h3>上传 CSV 文件（必须包含 OK_NG 标签列）:</h3>
+        <input type="file" name="csv_file" accept=".csv" required><br><br>
+        <button type="submit">上传并训练模型</button>
     </form>
 
-    <!-- Display message after model training -->
-    <p>{{ message }}</p>
-
-    <!-- Display form to input parameters for prediction -->
-    {% if features %}
-        <h2>Enter Glass Parameters</h2>
-        <form action="/" method="post">
-            {% for feature in features %}
-                <label for="{{ feature }}">{{ feature }}:</label>
-                <input type="text" id="{{ feature }}" name="{{ feature }}"><br><br>
-            {% endfor %}
-            <input type="submit" value="Predict">
-        </form>
+    {% if message %}
+        <p>{{ message }}</p>
     {% endif %}
 
-    <!-- Display prediction result -->
+    <hr>
+
+    <h3>请输入玻璃参数进行预测:</h3>
+    <form method="POST">
+        {% for feature in features %}
+            <label for="{{ feature }}">{{ feature }}:</label>
+            <input type="text" name="{{ feature }}" required><br><br>
+        {% endfor %}
+        <button type="submit">预测</button>
+    </form>
+
     {% if result %}
-        <h2>Prediction Result: {{ result }}</h2>
-        <p>Probability: {{ prob }}</p>
+        <h3>预测结果: {{ result }}</h3>
+        <h3>预测概率: {{ prob }}</h3>
     {% endif %}
 
-    <!-- Display SHAP visualization if available -->
     {% if result == "❌ 不合格" %}
-        <h2>SHAP Explanation for NG Prediction:</h2>
-        <img src="{{ url_for('static', filename='shap_plot.png') }}" alt="SHAP Plot">
+        <h3>SHAP 可视化分析图:</h3>
+        <img src="{{ url_for('static', filename='shap_plot.png') }}" alt="SHAP 图">
     {% endif %}
 </body>
 </html>
