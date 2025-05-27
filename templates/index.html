@@ -2,40 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>模型预测</title>
+    <title>Glass Quality Checker</title>
 </head>
 <body>
-    <h1>模型预测</h1>
+    <h1>🧠 Glass Quality Checker</h1>
+
     <form method="POST" enctype="multipart/form-data">
-        <label for="csv_file">上传 CSV 数据：</label>
-        <input type="file" name="csv_file" accept=".csv" required><br><br>
-        <button type="submit">上传并训练模型</button>
+        <p><strong>上传包含 OK_NG 标签的 CSV 文件：</strong></p>
+        <input type="file" name="csv_file" required>
+        <button type="submit">上传训练模型</button>
     </form>
 
+    <hr>
+
     {% if message %}
-        <h3>{{ message }}</h3>
+        <p>{{ message }}</p>
     {% endif %}
 
     {% if features %}
         <form method="POST">
-            <h3>输入预测参数：</h3>
-            {% for feature in features %}
-                <label for="{{ feature }}">{{ feature }}:</label>
-                <input type="text" name="{{ feature }}" required><br><br>
+            <p><strong>请输入各参数预测：</strong></p>
+            {% for f in features %}
+                <label>{{ f }}:</label>
+                <input type="number" step="any" name="{{ f }}" required><br>
             {% endfor %}
-            <button type="submit">预测</button>
+            <button type="submit">预测合格与否</button>
         </form>
     {% endif %}
 
     {% if result %}
-        <h3>预测结果：{{ result }}</h3>
-        <p>预测概率：{{ prob }}</p>
+        <h2>预测结果：{{ result }}</h2>
+        <p>预测概率 (为 OK 的概率)：{{ prob | round(4) }}</p>
     {% endif %}
 
-    {% if result == "❌ 不合格" %}
-        <h3>SHAP 分析图：</h3>
-        <img src="{{ url_for('static', filename='shap_plot.png') }}" alt="SHAP Plot">
+    {% if shap_plot %}
+        <h3>📊 SHAP 可解释性分析图：</h3>
+        <img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP Plot">
     {% endif %}
 </body>
 </html>
