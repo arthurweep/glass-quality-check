@@ -1,40 +1,61 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh">
 <head>
-    <title>玻璃质量预测系统</title>
     <meta charset="UTF-8">
+    <title>玻璃质量预测系统</title>
 </head>
 <body>
-    <h2>📁 上传 CSV 数据</h2>
+    <h2>📤 上传玻璃数据 CSV（包含 OK_NG）</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="csv_file">
-        <input type="submit" value="训练模型">
+        <button type="submit">上传并训练模型</button>
     </form>
-
     {% if message %}
-    <p>{{ message }}</p>
+        <p style="color: green;">{{ message }}</p>
     {% endif %}
 
     {% if features %}
-    <hr>
-    <h2>🔍 输入参数进行预测</h2>
-    <form method="POST">
-        {% for f in features %}
-            <label>{{ f }}:</label>
-            <input type="text" name="{{ f }}"><br>
-        {% endfor %}
-        <input type="submit" value="预测">
-    </form>
+        <h2>🔍 输入参数预测</h2>
+        <form method="POST">
+            {% for f in features %}
+                <label>{{ f }}:</label>
+                <input type="text" name="{{ f }}"><br>
+            {% endfor %}
+            <button type="submit">预测合格与否</button>
+        </form>
     {% endif %}
 
     {% if result %}
-    <h3>预测结果：{{ result }}</h3>
-    <p>预测概率：{{ "%.2f"|format(prob * 100) }}%</p>
+        <h2>📈 预测结果</h2>
+        <p><strong>{{ result }}</strong>（概率: {{ '%.2f'|format(prob*100) }}%）</p>
     {% endif %}
 
-    {% if shap_plot_url %}
-    <h3>🔎 SHAP 可视化解释：</h3>
-    <img src="{{ shap_plot_url }}">
+    {% if shap_table %}
+        <h2>📊 Top影响因子（SHAP + 概率影响）</h2>
+        <table border="1">
+            <tr>
+                <th>Feature</th>
+                <th>SHAP Value</th>
+                <th>Impact on Probability</th>
+            </tr>
+            {% for row in shap_table %}
+                <tr>
+                    <td>{{ row["Feature"] }}</td>
+                    <td>{{ "%.6f"|format(row["SHAP Value"]) }}</td>
+                    <td>{{ "%.6f"|format(row["Impact on Probability"]) }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if shap_plot_uri %}
+        <h3>📌 SHAP解释图（Waterfall）</h3>
+        <img src="data:image/png;base64,{{ shap_plot_uri }}" alt="SHAP 图">
+    {% endif %}
+
+    {% if performance_plot_uri %}
+        <h2>🎯 模型性能图</h2>
+        <img src="data:image/png;base64,{{ performance_plot_uri }}" alt="性能图">
     {% endif %}
 </body>
 </html>
