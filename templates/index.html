@@ -1,77 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
+    <title>玻璃质量预测系统</title>
     <meta charset="UTF-8">
-    <title>玻璃质量预测</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        .section {
-            margin-bottom: 30px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .result {
-            font-size: 1.2em;
-            margin-top: 20px;
-        }
-        img {
-            max-width: 100%;
-            margin-top: 20px;
-        }
-        input[type="number"] {
-            width: 80px;
-            margin-right: 10px;
-        }
-    </style>
 </head>
 <body>
-    <h1>玻璃质量智能预测系统</h1>
+    <h2>📁 上传 CSV 数据</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="csv_file">
+        <input type="submit" value="训练模型">
+    </form>
 
-    <div class="section">
-        <h2>步骤 1：上传训练数据</h2>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="csv_file" accept=".csv" required>
-            <input type="submit" value="上传训练">
-        </form>
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
-    </div>
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
 
     {% if features %}
-    <div class="section">
-        <h2>步骤 2：输入参数进行预测</h2>
-        <form method="post">
-            {% for feature in features %}
-                <label>{{ feature }}:</label>
-                <input type="number" step="any" name="{{ feature }}" required><br><br>
-            {% endfor %}
-            <input type="submit" value="预测合格与否">
-        </form>
-    </div>
+    <hr>
+    <h2>🔍 输入参数进行预测</h2>
+    <form method="POST">
+        {% for f in features %}
+            <label>{{ f }}:</label>
+            <input type="text" name="{{ f }}"><br>
+        {% endfor %}
+        <input type="submit" value="预测">
+    </form>
     {% endif %}
 
     {% if result %}
-    <div class="section result">
-        <strong>预测结果：</strong> {{ result }}<br>
-        <strong>预测概率：</strong> {{ "%.2f"|format(prob * 100) }}%
-    </div>
+    <h3>预测结果：{{ result }}</h3>
+    <p>预测概率：{{ "%.2f"|format(prob * 100) }}%</p>
     {% endif %}
 
-    {% if shap_plot %}
-    <div class="section">
-        <h2>SHAP 可解释性分析图：</h2>
-        <img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP 图">
-    </div>
+    {% if shap_plot_url %}
+    <h3>🔎 SHAP 可视化解释：</h3>
+    <img src="{{ shap_plot_url }}">
     {% endif %}
 </body>
 </html>
