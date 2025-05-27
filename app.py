@@ -14,19 +14,18 @@ features = []
 def index():
     global model, explainer, features
     message, pred_result, prob = "", "", None
-    df = None  # Initialize df here to prevent UnboundLocalError
 
     if request.method == "POST":
-        if "csv_file" in request.files:
+        if "csv_file" in request.files:  # 上传 CSV 文件进行训练
             csv_file = request.files["csv_file"]
             df = pd.read_csv(csv_file)
             model, explainer, features = train_model(df)
             message = "✅ 模型训练完成，可在下方输入参数进行预测。"
-        elif model is not None and df is not None:  # Make sure df is not None
+        elif model is not None:  # 当模型已加载时，使用表单输入预测
             input_data = [float(request.form[f]) for f in features]
             df_input = pd.DataFrame([input_data], columns=features)
             prob = model.predict_proba(df_input)[0][1]
-            threshold = recommend_threshold(model, explainer.data, df["OK_NG"])  # Fix: use df here
+            threshold = recommend_threshold(model, explainer.data, explainer.data["OK_NG"])
             pred_result = "✅ 合格" if prob >= threshold else "❌ 不合格"
             shap_values = explainer(df_input)
             shap.plots.waterfall(shap_values[0], show=False)
@@ -36,4 +35,4 @@ def index():
     return render_template("index.html", message=message, features=features, result=pred_result, prob=prob)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
